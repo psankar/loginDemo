@@ -248,7 +248,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
         override fun doInBackground(vararg params: Void): Boolean? {
 
-            val urlPath = "https://10.0.2.2:8080"
+            val urlPath = "https://10.0.2.2:8000/login"
 
             try {
                 val inputStream = (URL(urlPath).openConnection() as HttpsURLConnection).apply {
@@ -269,7 +269,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                     }
                     is IOException -> "Network Error: ${e.localizedMessage}"
                     else -> {
-                        "Networki error: ${e.localizedMessage}"
+                        "Network error: ${e.localizedMessage}"
                     }
                 }
 
