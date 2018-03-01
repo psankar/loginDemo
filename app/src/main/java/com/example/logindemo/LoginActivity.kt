@@ -26,7 +26,10 @@ import kotlinx.android.synthetic.main.activity_login.*
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.util.*
+import javax.net.ssl.*
 
 /**
  * A login screen that offers login via email/password.
@@ -245,10 +248,17 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
         override fun doInBackground(vararg params: Void): Boolean? {
 
-            val urlPath = "http://10.0.2.2:8000"
-            var data: String
+            val urlPath = "https://10.0.2.2:8080"
+
             try {
-                data = URL(urlPath).readText()
+                val inputStream = (URL(urlPath).openConnection() as HttpsURLConnection).apply {
+                    sslSocketFactory = createSocketFactory(listOf("TLSv1.2"))
+                    hostnameVerifier = HostnameVerifier { _, _ -> true }
+                    readTimeout = 5_000
+                }.inputStream
+                val inputAsString = inputStream.bufferedReader().use { it.readText() } // defaults to UTF-8
+                Log.e("UserLoginTask", inputAsString)
+
             } catch (e: Exception) {
                 Log.e("doInBackground", "Exception caught: ${e.localizedMessage}")
                 password.error = when (e) {
@@ -257,7 +267,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                         e.printStackTrace()
                         "Needs Permission ? ${e.localizedMessage}"
                     }
-                    is IOException -> "Network Error"
+                    is IOException -> "Network Error: ${e.localizedMessage}"
                     else -> {
                         "Networki error: ${e.localizedMessage}"
                     }
@@ -266,7 +276,6 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
                 return false
             }
 
-            Log.i("UserLoginTask", data)
             return true
         }
 
@@ -296,3 +305,13 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
     }
 }
+
+private fun createSocketFactory(protocols: List<String>) =
+        SSLContext.getInstance(protocols[0]).apply {
+            val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
+                override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+                override fun checkClientTrusted(certs: Array<X509Certificate>, authType: String) = Unit
+                override fun checkServerTrusted(certs: Array<X509Certificate>, authType: String) = Unit
+            })
+            init(null, trustAllCerts, SecureRandom())
+        }.socketFactory
