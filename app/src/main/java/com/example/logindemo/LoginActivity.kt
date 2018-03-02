@@ -6,6 +6,7 @@ import android.animation.AnimatorListenerAdapter
 import android.annotation.TargetApi
 import android.app.LoaderManager.LoaderCallbacks
 import android.content.CursorLoader
+import android.content.Intent
 import android.content.Loader
 import android.content.pm.PackageManager
 import android.database.Cursor
@@ -285,6 +286,10 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
             if (success!!) {
                 finish()
+                val intent = Intent(this@LoginActivity, MyGroupsActivity::class.java).apply {
+                    putExtra("JWT", "God is Great")
+                }
+                startActivity(intent)
             } else {
                 password.requestFocus()
             }
