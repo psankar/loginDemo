@@ -1,5 +1,6 @@
 package com.example.logindemo
 
+import UnsafeOkHttpClient
 import android.Manifest.permission.READ_CONTACTS
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -24,13 +25,15 @@ import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_login.*
-import java.io.IOException
-import java.net.MalformedURLException
-import java.net.URL
+import okhttp3.MediaType
+import okhttp3.Request
+import okhttp3.RequestBody
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import java.util.*
-import javax.net.ssl.*
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 /**
  * A login screen that offers login via email/password.
@@ -250,34 +253,21 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         override fun doInBackground(vararg params: Void): Boolean? {
 
             val urlPath = "https://10.0.2.2:8000/login"
+            var json = """{"Username": "${this.mEmail}", "Password": "${this.mPassword}"}"""
+            val JSON = MediaType.parse("application/json; charset=utf-8")
 
-            try {
-                val inputStream = (URL(urlPath).openConnection() as HttpsURLConnection).apply {
-                    sslSocketFactory = createSocketFactory(listOf("TLSv1.2"))
-                    hostnameVerifier = HostnameVerifier { _, _ -> true }
-                    readTimeout = 5_000
-                }.inputStream
-                val inputAsString = inputStream.bufferedReader().use { it.readText() } // defaults to UTF-8
-                Log.e("UserLoginTask", inputAsString)
+            var body = RequestBody.create(JSON, json);
 
-            } catch (e: Exception) {
-                Log.e("doInBackground", "Exception caught: ${e.localizedMessage}")
-                password.error = when (e) {
-                    is MalformedURLException -> "Invalid URL"
-                    is SecurityException -> {
-                        e.printStackTrace()
-                        "Needs Permission ? ${e.localizedMessage}"
-                    }
-                    is IOException -> "Network Error: ${e.localizedMessage}"
-                    else -> {
-                        "Network error: ${e.localizedMessage}"
-                    }
-                }
+            var request = Request.Builder().url(urlPath).post(body).build()
+            var client = UnsafeOkHttpClient.getUnsafeOkHttpClient().build()
+            var response = client.newCall(request).execute()
 
+            if (response.isSuccessful()) {
+                return true
+            } else {
+                Log.e("UserLoginTask", "Failure response from the server" + response?.body()?.string())
                 return false
             }
-
-            return true
         }
 
         override fun onPostExecute(success: Boolean?) {
