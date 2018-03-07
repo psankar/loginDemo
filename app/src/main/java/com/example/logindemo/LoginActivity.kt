@@ -25,6 +25,8 @@ import okhttp3.RequestBody
  */
 class LoginActivity : AppCompatActivity() {
 
+    private var jwt: String = ""
+
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
@@ -159,6 +161,7 @@ class LoginActivity : AppCompatActivity() {
             val body = RequestBody.create(jsonType, json)
 
             val request = Request.Builder().url(urlPath).post(body).build()
+            // val request = Request.Builder().url(urlPath).post(body).addHeader("Authorization", "Bearer ${jwt}").build()
             val client = UnsafeOkHttpClient.getUnsafeOkHttpClient().build()
 
             val response = client.newCall(request).execute()
@@ -167,8 +170,9 @@ class LoginActivity : AppCompatActivity() {
                 val body = response.body()?.string()
                 val gson = GsonBuilder().create()
 
-                val loginResponse = gson.fromJson(body, LoginRes::class.java)
-                Log.i("UserLoginTask", loginResponse.JWT)
+                jwt = gson.fromJson(body, LoginRes::class.java).JWT
+                Log.i("UserLoginTask", jwt)
+
                 return true
             } else {
                 Log.e("UserLoginTask", "Failure response from the server" + response?.body()?.string())
@@ -183,7 +187,7 @@ class LoginActivity : AppCompatActivity() {
             if (success!!) {
                 finish()
                 val intent = Intent(this@LoginActivity, MyGroupsActivity::class.java).apply {
-                    putExtra("JWT", "God is Great")
+                    putExtra("JWT", jwt)
                 }
                 startActivity(intent)
             } else {
