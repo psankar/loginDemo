@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.android.synthetic.main.layout_my_groups_row.view.*
 
 /**
  * Created by secret on 07/03/18.
@@ -22,10 +23,10 @@ class MyGroupsAdapter : RecyclerView.Adapter<MyGroupsViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: MyGroupsViewHolder?, position: Int) {
-
+        holder?.view?.textView_group_name?.text = "Hello World"
     }
 }
 
-class MyGroupsViewHolder(v: View) : RecyclerView.ViewHolder(v) {
+class MyGroupsViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 
 }
