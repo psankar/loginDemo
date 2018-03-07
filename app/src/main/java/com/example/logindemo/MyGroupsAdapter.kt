@@ -24,6 +24,6 @@ class MyGroupsAdapter : RecyclerView.Adapter<MyGroupsViewHolder>() {
     }
 }
 
-class MyGroupsViewHolder(v: View) : RecyclerView.ViewHolder() {
+class MyGroupsViewHolder(v: View) : RecyclerView.ViewHolder(v) {
 
 }
