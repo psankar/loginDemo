@@ -4,6 +4,7 @@ import UnsafeOkHttpClient
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.TargetApi
+import android.content.Intent
 import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
@@ -166,10 +167,9 @@ class LoginActivity : AppCompatActivity() {
             val response = client.newCall(request).execute()
 
             if (response.isSuccessful) {
-                val body = response.body()?.string()
                 val gson = GsonBuilder().create()
 
-                jwt = gson.fromJson(body, LoginRes::class.java).JWT
+                jwt = gson.fromJson(response.body()?.string(), LoginRes::class.java).JWT
                 Log.i("UserLoginTask", jwt)
 
                 return true
@@ -185,10 +185,10 @@ class LoginActivity : AppCompatActivity() {
 
             if (success!!) {
                 finish()
-//                val intent = Intent(this@LoginActivity, MyGroupsActivity::class.java).apply {
-//                    putExtra("JWT", jwt)
-//                }
-//                startActivity(intent)
+                val intent = Intent(this@LoginActivity, MyGroupsActivity::class.java).apply {
+                    putExtra("JWT", jwt)
+                }
+                startActivity(intent)
             } else {
                 password.requestFocus()
             }

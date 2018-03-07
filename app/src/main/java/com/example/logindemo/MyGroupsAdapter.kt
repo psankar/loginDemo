@@ -1,6 +1,7 @@
 package com.example.logindemo
 
 import android.support.v7.widget.RecyclerView
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 
@@ -11,16 +12,17 @@ import android.view.ViewGroup
 class MyGroupsAdapter : RecyclerView.Adapter<MyGroupsViewHolder>() {
 
     override fun getItemCount(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         return 2;
     }
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): MyGroupsViewHolder {
-        TODO("Not implemented yet")
+        val layoutInflater = LayoutInflater.from(parent?.context)
+        val cellForRow = layoutInflater.inflate(R.layout.layout_my_groups_row, parent, false)
+        return MyGroupsViewHolder(cellForRow)
     }
 
     override fun onBindViewHolder(holder: MyGroupsViewHolder?, position: Int) {
-        TODO("Not implemented yet")
+
     }
 }
 
