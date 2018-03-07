@@ -10,10 +10,10 @@ import kotlinx.android.synthetic.main.layout_my_groups_row.view.*
  * Created by secret on 07/03/18.
  */
 
-class MyGroupsAdapter : RecyclerView.Adapter<MyGroupsViewHolder>() {
+class MyGroupsAdapter(val groups: Array<String>) : RecyclerView.Adapter<MyGroupsViewHolder>() {
 
     override fun getItemCount(): Int {
-        return 2;
+        return groups.count();
     }
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): MyGroupsViewHolder {
@@ -23,7 +23,7 @@ class MyGroupsAdapter : RecyclerView.Adapter<MyGroupsViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: MyGroupsViewHolder?, position: Int) {
-        holder?.view?.textView_group_name?.text = "Hello World"
+        holder?.view?.textView_group_name?.text = groups.get(index = position)
     }
 }
 

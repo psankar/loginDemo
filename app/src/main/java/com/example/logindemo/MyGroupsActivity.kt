@@ -12,6 +12,6 @@ class MyGroupsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_my_groups)
 
         recyclerView_mygroups.layoutManager = LinearLayoutManager(this)
-        recyclerView_mygroups.adapter = MyGroupsAdapter()
+        recyclerView_mygroups.adapter = MyGroupsAdapter(arrayOf("Hello", "ClientApp"))
     }
 }
