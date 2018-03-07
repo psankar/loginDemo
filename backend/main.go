@@ -5,14 +5,22 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/handlers"
 	"github.com/kabukky/httpscerts"
 )
 
+const topSecret = "Top Secret"
+
 type LoginReq struct {
 	Username string
 	Password string
+}
+
+type LoginRes struct {
+	JWT string
 }
 
 func main() {
@@ -30,7 +38,33 @@ func main() {
 
 			log.Println(x)
 
+			if x.Password != "password" {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+
+			token := jwt.NewWithClaims(
+				jwt.SigningMethodHS256,
+				jwt.StandardClaims{
+					ExpiresAt: time.Now().Add(time.Hour * 5).Unix(),
+				})
+			tokenString, err := token.SignedString([]byte(topSecret))
+			if err != nil {
+				http.Error(w, "JSON Marshal Error", http.StatusInternalServerError)
+				return
+			}
+			log.Println(tokenString, err)
+
+			var jData []byte
+			jData, err = json.Marshal(LoginRes{JWT: tokenString})
+			if err != nil {
+				http.Error(w, "JSON Marshal Error", http.StatusInternalServerError)
+				return
+			}
+			log.Println(string(jData))
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
+			w.Write(jData)
 		})))
 
 	err := httpscerts.Generate("cert.pem", "key.pem", "127.0.0.1:8000")
