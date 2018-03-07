@@ -14,6 +14,7 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
+import com.google.gson.GsonBuilder
 import kotlinx.android.synthetic.main.activity_login.*
 import okhttp3.MediaType
 import okhttp3.Request
@@ -163,6 +164,11 @@ class LoginActivity : AppCompatActivity() {
             val response = client.newCall(request).execute()
 
             if (response.isSuccessful) {
+                val body = response.body()?.string()
+                val gson = GsonBuilder().create()
+
+                val loginResponse = gson.fromJson(body, LoginRes::class.java)
+                Log.i("UserLoginTask", loginResponse.JWT)
                 return true
             } else {
                 Log.e("UserLoginTask", "Failure response from the server" + response?.body()?.string())
@@ -191,3 +197,5 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 }
+
+class LoginRes(val JWT : String)
