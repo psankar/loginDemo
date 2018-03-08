@@ -43,6 +43,8 @@ class MyGroupsActivity : AppCompatActivity() {
                 val groups = gson.fromJson(response.body()?.string(), MyGroupsRes::class.java).Groups
 
                 runOnUiThread {
+                    // We could probably do this in onPostExecute but then we would
+                    // need a global variable for groups. This is simpler.
                     recyclerView_mygroups.adapter = MyGroupsAdapter(groups)
                 }
 
