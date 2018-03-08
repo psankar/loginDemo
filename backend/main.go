@@ -11,10 +11,14 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/handlers"
 	"github.com/kabukky/httpscerts"
-	"gitlab.com/secretsapp/secretsapp/backend/conf"
 )
 
 const topSecret = "Top Secret"
+
+type DemoClaims struct {
+	Foo string
+	jwt.StandardClaims
+}
 
 type LoginReq struct {
 	Username string
@@ -51,15 +55,18 @@ func main() {
 
 			token := jwt.NewWithClaims(
 				jwt.SigningMethodHS256,
-				jwt.StandardClaims{
-					ExpiresAt: time.Now().Add(time.Hour * 5).Unix(),
+				DemoClaims{
+					"Bar",
+					jwt.StandardClaims{
+						ExpiresAt: time.Now().Add(time.Hour * 5).Unix(),
+					},
 				})
 			tokenString, err := token.SignedString([]byte(topSecret))
 			if err != nil {
 				http.Error(w, "JSON Marshal Error", http.StatusInternalServerError)
 				return
 			}
-			log.Println(tokenString, err)
+			log.Println(tokenString)
 
 			var jData []byte
 			jData, err = json.Marshal(LoginRes{JWT: tokenString})
@@ -75,6 +82,7 @@ func main() {
 
 	http.Handle("/my-groups", handlers.LoggingHandler(os.Stderr, http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
+			<-time.After(3 * time.Second)
 			tokenString := r.Header.Get("Authorization")
 			if tokenString == "" {
 				http.Error(w, "Missing Authorization header", http.StatusUnauthorized)
@@ -87,30 +95,34 @@ func main() {
 			}
 
 			tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+			log.Println(tokenString)
 
-			token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{},
+			token, err := jwt.ParseWithClaims(tokenString, &DemoClaims{},
 				func(token *jwt.Token) (interface{}, error) {
-					return []byte(conf.JWTSigningKey()), nil
+					return []byte(topSecret), nil
 				})
-
 			if err != nil {
-				http.Error(w, "JWT Parsing Error", http.StatusUnauthorized)
-			}
-			if _, ok := token.Claims.(*jwt.StandardClaims); ok && token.Valid {
-				http.Error(w, "Invalid JWT", http.StatusUnauthorized)
-			}
-
-			myGroups := []string{"Hello", "World"}
-			var jData []byte
-			jData, err = json.Marshal(MyGroupsRes{myGroups})
-			if err != nil {
-				http.Error(w, "JSON Marshal Error", http.StatusInternalServerError)
+				http.Error(w, "JWT Parsing Error: "+err.Error(), http.StatusUnauthorized)
 				return
 			}
-			log.Println(string(jData))
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write(jData)
+			log.Println(token)
+
+			if _, ok := token.Claims.(*DemoClaims); ok && token.Valid {
+				myGroups := []string{"Hello", "World", "From", "The", "Server"}
+				var jData []byte
+				jData, err = json.Marshal(MyGroupsRes{myGroups})
+				if err != nil {
+					http.Error(w, "JSON Marshal Error", http.StatusInternalServerError)
+					return
+				}
+				log.Println(string(jData))
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				w.Write(jData)
+				return
+			}
+
+			http.Error(w, "Invalid JWT", http.StatusUnauthorized)
 		})))
 
 	err := httpscerts.Generate("cert.pem", "key.pem", "127.0.0.1:8000")

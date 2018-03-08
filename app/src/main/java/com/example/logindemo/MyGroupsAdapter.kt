@@ -10,10 +10,10 @@ import kotlinx.android.synthetic.main.layout_my_groups_row.view.*
  * Created by secret on 07/03/18.
  */
 
-class MyGroupsAdapter(val groups: Array<String>) : RecyclerView.Adapter<MyGroupsViewHolder>() {
+class MyGroupsAdapter(private val groups: Array<String>) : RecyclerView.Adapter<MyGroupsViewHolder>() {
 
     override fun getItemCount(): Int {
-        return groups.count();
+        return groups.size;
     }
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): MyGroupsViewHolder {
